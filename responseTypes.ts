@@ -23,7 +23,7 @@ interface UserWithContributions {
 }
 
 interface UserWithCreationDate {
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface ResponseBody<T extends UserWithContributions | UserWithCreationDate> {

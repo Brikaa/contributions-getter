@@ -1,4 +1,5 @@
 import { Contribution } from './contributionTypes';
+import { NotSuccessStatusException } from './exceptions';
 import {
   UserWithContributionsResponseBody,
   UserWithCreationDateResponseBody
@@ -55,11 +56,11 @@ const sendRequest = async (token: string, query: string, variables: { [key: stri
   return json;
 };
 
-/*
-  - Get user with creation date
-  - For each year, from the current year till the creation year, get the contributions
-  - Massage the contribution into our contribution type
-*/
+/**
+ * - Get user with creation date
+ * - For each year, from the current year till the creation year, get the contributions
+ * - Massage the contribution into Contribution[]
+ */
 export const getContributions = async (
   token: string,
   userName: string
@@ -69,13 +70,16 @@ export const getContributions = async (
     USER_WITH_CREATION_DATE_QUERY,
     { login: userName }
   );
-  const creationYear = userWithDateRes.data.user.createdAt.getFullYear();
+  const creationYear = new Date(userWithDateRes.data.user.createdAt).getFullYear();
   const contributions: Contribution[] = [];
-  for (let year = new Date().getFullYear(); year >= creationYear; --year) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  for (let year = currentYear; year >= creationYear; --year) {
+    const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
     const userWithContributionsRes: UserWithContributionsResponseBody = await sendRequest(
       token,
       USER_WITH_CONTRIBUTIONS_QUERY,
-      { login: userName, from: year }
+      { login: userName, from: startDate }
     );
     contributions.push({
       year,
