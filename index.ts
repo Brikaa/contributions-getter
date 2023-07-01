@@ -14,7 +14,7 @@ const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
 const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: DateTime) {
   user(login: $login) {
       contributionsCollection(from: $from) {
-          commitContributionsByRepository {
+          commitContributionsByRepository(maxRepositories: 100) {
               contributions {
                   totalCount
               }
