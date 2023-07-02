@@ -17,6 +17,7 @@ const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: Dat
   user(login: $login) {
       contributionsCollection(from: $from) {
           commitContributionsByRepository(maxRepositories: 100) {
+              url
               contributions {
                   totalCount
               }
