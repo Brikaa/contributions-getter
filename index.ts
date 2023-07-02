@@ -1,10 +1,10 @@
-import { Contribution } from './contributionTypes';
-import { GraphQLException, NotSuccessStatusException } from './exceptions';
+import { Contribution } from './types/contributionTypes';
+import { GraphQLException, NotSuccessStatusException } from './exceptions/exceptions';
 import {
   UserResponseBody,
   UserWithContributionsResponseBody,
   UserWithCreationDateResponseBody
-} from './responseTypes';
+} from './types/responseTypes';
 import { jsonStringify } from './util';
 
 const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
