@@ -10,7 +10,7 @@ interface Repository {
 }
 
 export interface Contribution {
-  startDate: string;
-  endDate: string
+  startDate: Date;
+  endDate: Date;
   repos: Repository[];
 }

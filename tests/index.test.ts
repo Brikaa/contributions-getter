@@ -21,7 +21,7 @@ describe('getContributions', () => {
     console.log(jsonStringify(contributions));
   });
 
-  it('Throws GraphQLException when the username is incorrect', async () => {
+  it('throws GraphQLException when the username is incorrect', async () => {
     // A GitHub username can never be 'new'
     await expect(() => getContributions(authToken, 'new')).rejects.toThrow(GraphQLException);
   });

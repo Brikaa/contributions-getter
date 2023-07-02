@@ -80,9 +80,8 @@ const handleResponseError = (response: UserResponseBody) => {
 };
 
 /**
- * - Get user with creation date
- * - For each year, from the current year till the creation year, get the contributions
- * - Massage the contribution into Contribution[]
+ * Get the contributions for each interval, determined by `config.monthsInterval` (default 12),
+ * from the current date (or slightly past it) till the account creation date (or slightly before it)
  */
 export const getContributions = async (
   token: string,
@@ -96,36 +95,39 @@ export const getContributions = async (
     { login: userName }
   );
   const creationDate = new Date(userWithDateRes.data!.user!.createdAt);
-  const contributions: Contribution[] = [];
+
+  const promises = [];
   let endDate = new Date();
   let startDate = new Date(endDate);
   while (endDate >= creationDate) {
     startDate.setMonth(startDate.getMonth() - config.monthsInterval);
-    const userWithContributionsRes: UserWithContributionsResponseBody = await sendRequest(
-      token,
-      handleResponseError,
-      USER_WITH_CONTRIBUTIONS_QUERY,
-      { login: userName, from: startDate, to: endDate }
+    const startDateCopy = new Date(startDate);
+    const endDateCopy = new Date(endDate);
+    promises.push(
+      sendRequest(token, handleResponseError, USER_WITH_CONTRIBUTIONS_QUERY, {
+        login: userName,
+        from: startDate,
+        to: endDate
+      }).then((userWithContributionsRes: UserWithContributionsResponseBody) => ({
+        startDate: startDateCopy,
+        endDate: endDateCopy,
+        repos:
+          userWithContributionsRes.data!.user!.contributionsCollection.commitContributionsByRepository.map(
+            (c) => ({
+              commits: c.contributions.totalCount,
+              description: c.repository.description,
+              name: c.repository.nameWithOwner,
+              primaryLanguage:
+                c.repository.primaryLanguage === null ? null : c.repository.primaryLanguage?.name,
+              stars: c.repository.stargazerCount,
+              url: c.repository.url,
+              commitsUrl: c.url,
+              isPrivate: c.repository.isPrivate
+            })
+          )
+      }))
     );
-    contributions.push({
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      repos:
-        userWithContributionsRes.data!.user!.contributionsCollection.commitContributionsByRepository.map(
-          (c) => ({
-            commits: c.contributions.totalCount,
-            description: c.repository.description,
-            name: c.repository.nameWithOwner,
-            primaryLanguage:
-              c.repository.primaryLanguage === null ? null : c.repository.primaryLanguage?.name,
-            stars: c.repository.stargazerCount,
-            url: c.repository.url,
-            commitsUrl: c.url,
-            isPrivate: c.repository.isPrivate
-          })
-        )
-    });
     endDate = new Date(startDate);
   }
-  return contributions;
+  return await Promise.all(promises);
 };
