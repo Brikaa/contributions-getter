@@ -6,6 +6,7 @@ import {
   UserWithCreationDateResponseBody
 } from './types/responseTypes';
 import { jsonStringify } from './util';
+import { Config } from './types/configTypes';
 
 const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
   user(login: $login) {
@@ -13,9 +14,9 @@ const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
   }
 }`;
 
-const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: DateTime) {
+const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: DateTime, $to: DateTime) {
   user(login: $login) {
-      contributionsCollection(from: $from) {
+      contributionsCollection(from: $from, to: $to) {
           commitContributionsByRepository(maxRepositories: 100) {
               url
               contributions {
@@ -85,7 +86,8 @@ const handleResponseError = (response: UserResponseBody) => {
  */
 export const getContributions = async (
   token: string,
-  userName: string
+  userName: string,
+  config: Config = { monthsInterval: 12 }
 ): Promise<Contribution[]> => {
   const userWithDateRes: UserWithCreationDateResponseBody = await sendRequest(
     token,
@@ -93,20 +95,21 @@ export const getContributions = async (
     USER_WITH_CREATION_DATE_QUERY,
     { login: userName }
   );
-  const creationYear = new Date(userWithDateRes.data!.user!.createdAt).getFullYear();
+  const creationDate = new Date(userWithDateRes.data!.user!.createdAt);
   const contributions: Contribution[] = [];
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  for (let year = currentYear; year >= creationYear; --year) {
-    const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+  let endDate = new Date();
+  let startDate = new Date(endDate);
+  while (endDate >= creationDate) {
+    startDate.setMonth(startDate.getMonth() - config.monthsInterval);
     const userWithContributionsRes: UserWithContributionsResponseBody = await sendRequest(
       token,
       handleResponseError,
       USER_WITH_CONTRIBUTIONS_QUERY,
-      { login: userName, from: startDate }
+      { login: userName, from: startDate, to: endDate }
     );
     contributions.push({
-      year,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
       repos:
         userWithContributionsRes.data!.user!.contributionsCollection.commitContributionsByRepository.map(
           (c) => ({
@@ -122,6 +125,7 @@ export const getContributions = async (
           })
         )
     });
+    endDate = new Date(startDate);
   }
   return contributions;
 };
