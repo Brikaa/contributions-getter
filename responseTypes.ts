@@ -6,6 +6,7 @@ interface Repository {
   primaryLanguage: {
     name: string;
   } | null;
+  isPrivate: boolean;
 }
 
 interface CommitContributionsByRepository {

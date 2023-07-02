@@ -6,6 +6,7 @@ interface Repository {
   stars: number;
   primaryLanguage: string | null;
   commits: number;
+  isPrivate: boolean;
 }
 
 export interface Contribution {

@@ -22,6 +22,7 @@ const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: Dat
                   totalCount
               }
               repository {
+                  isPrivate
                   nameWithOwner
                   url
                   description
@@ -116,7 +117,8 @@ export const getContributions = async (
               c.repository.primaryLanguage === null ? null : c.repository.primaryLanguage?.name,
             stars: c.repository.stargazerCount,
             url: c.repository.url,
-            commitsUrl: c.url
+            commitsUrl: c.url,
+            isPrivate: c.repository.isPrivate
           })
         )
     });
