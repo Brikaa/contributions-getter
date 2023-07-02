@@ -4,3 +4,10 @@ export class NotSuccessStatusException extends Error {
     this.name = 'NotSuccessStatusException';
   }
 }
+
+export class GraphQLException extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GraphQLException';
+  }
+}

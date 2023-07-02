@@ -27,10 +27,12 @@ interface UserWithCreationDate {
 }
 
 interface ResponseBody<T extends UserWithContributions | UserWithCreationDate> {
-  data: {
-    user: T;
-  };
+  data?: {
+    user: T | null;
+  } | null;
+  errors?: any;
 }
 
 export type UserWithContributionsResponseBody = ResponseBody<UserWithContributions>;
 export type UserWithCreationDateResponseBody = ResponseBody<UserWithCreationDate>;
+export type UserResponseBody = UserWithContributionsResponseBody | UserWithCreationDateResponseBody;

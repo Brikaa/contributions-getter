@@ -1,9 +1,11 @@
 import { Contribution } from './contributionTypes';
-import { NotSuccessStatusException } from './exceptions';
+import { GraphQLException, NotSuccessStatusException } from './exceptions';
 import {
+  UserResponseBody,
   UserWithContributionsResponseBody,
   UserWithCreationDateResponseBody
 } from './responseTypes';
+import { jsonStringify } from './util';
 
 const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
   user(login: $login) {
@@ -32,7 +34,12 @@ const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: Dat
   }
 }`;
 
-const sendRequest = async (token: string, query: string, variables: { [key: string]: any }) => {
+const sendRequest = async (
+  token: string,
+  handleErrors: (response: any) => void,
+  query: string,
+  variables: { [key: string]: any }
+) => {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   headers.append('Authorization', `Bearer ${token}`);
@@ -53,7 +60,20 @@ const sendRequest = async (token: string, query: string, variables: { [key: stri
     );
   }
   const json = await res.json();
+  handleErrors(json);
   return json;
+};
+
+const handleResponseError = (response: UserResponseBody) => {
+  let message;
+  if (response.data === undefined) message = 'Missing data field';
+  else if (response.data === null) message = 'Data field is null';
+  else if (response.data.user === null) message = 'User field is null';
+  else return;
+  const graphQLError = !!response.errors
+    ? jsonStringify(response.errors)
+    : 'No information about the error in the GraphQL response';
+  throw new GraphQLException(`${message}\nGraphQL response error: ${graphQLError}`);
 };
 
 /**
@@ -67,10 +87,11 @@ export const getContributions = async (
 ): Promise<Contribution[]> => {
   const userWithDateRes: UserWithCreationDateResponseBody = await sendRequest(
     token,
+    handleResponseError,
     USER_WITH_CREATION_DATE_QUERY,
     { login: userName }
   );
-  const creationYear = new Date(userWithDateRes.data.user.createdAt).getFullYear();
+  const creationYear = new Date(userWithDateRes.data!.user!.createdAt).getFullYear();
   const contributions: Contribution[] = [];
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -78,13 +99,14 @@ export const getContributions = async (
     const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
     const userWithContributionsRes: UserWithContributionsResponseBody = await sendRequest(
       token,
+      handleResponseError,
       USER_WITH_CONTRIBUTIONS_QUERY,
       { login: userName, from: startDate }
     );
     contributions.push({
       year,
       repos:
-        userWithContributionsRes.data.user.contributionsCollection.commitContributionsByRepository.map(
+        userWithContributionsRes.data!.user!.contributionsCollection.commitContributionsByRepository.map(
           (c) => ({
             commits: c.contributions.totalCount,
             description: c.repository.description,

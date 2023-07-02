@@ -1,6 +1,7 @@
 import { getContributions } from '.';
-import { NotSuccessStatusException } from './exceptions';
+import { GraphQLException, NotSuccessStatusException } from './exceptions';
 import { readFileSync } from 'fs';
+import { jsonStringify } from './util';
 
 let authToken: string;
 
@@ -15,8 +16,13 @@ describe('getContributions', () => {
     );
   });
 
-  it('returns the contributions when the auth token is correct', async () => {
+  it('returns the contributions when the auth token and data are correct', async () => {
     const contributions = await getContributions(authToken, 'brikaa');
-    console.log(contributions);
+    console.log(jsonStringify(contributions));
+  });
+
+  it('Throws GraphQLException when the username is incorrect', async () => {
+    // A GitHub username can never be 'new'
+    await expect(() => getContributions(authToken, 'new')).rejects.toThrow(GraphQLException);
   });
 });
