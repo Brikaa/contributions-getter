@@ -1,16 +1,16 @@
-import { Contribution } from './types/contributionTypes';
+import { Contribution } from '../types/contributionTypes';
 import {
   GraphQLException,
   InvalidConfigException,
   NotSuccessStatusException
-} from './exceptions/exceptions';
+} from '../exceptions/exceptions';
 import {
   UserResponseBody,
   UserWithContributionsResponseBody,
   UserWithCreationDateResponseBody
-} from './types/responseTypes';
+} from '../types/responseTypes';
 import { jsonStringify } from './util';
-import { Config } from './types/configTypes';
+import { Config } from '../types/configTypes';
 
 const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
   user(login: $login) {
@@ -92,7 +92,7 @@ const validateConfig = (config: Config) => {
 
 /**
  * Get the contributions for each interval, determined by `config.monthsInterval` (default 12),
- * from the current date (or slightly past it) till the account creation date (or slightly before it)
+ * from the current date till the account creation date
  */
 export const getContributions = async (
   token: string,

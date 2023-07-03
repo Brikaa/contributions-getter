@@ -1,11 +1,11 @@
-import { getContributions } from '..';
+import { getContributions } from '../main';
 import {
   GraphQLException,
   InvalidConfigException,
   NotSuccessStatusException
 } from '../exceptions/exceptions';
 import { readFileSync } from 'fs';
-import { jsonStringify } from '../util';
+import { jsonStringify } from '../main/util';
 
 let authToken: string;
 
