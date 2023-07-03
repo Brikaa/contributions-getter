@@ -34,6 +34,10 @@ interface ResponseBody<T extends UserWithContributions | UserWithCreationDate> {
   errors?: any;
 }
 
-export type UserWithContributionsResponseBody = ResponseBody<UserWithContributions>;
-export type UserWithCreationDateResponseBody = ResponseBody<UserWithCreationDate>;
-export type UserResponseBody = UserWithContributionsResponseBody | UserWithCreationDateResponseBody;
+export type UserWithContributionsResponseBody =
+  ResponseBody<UserWithContributions>;
+export type UserWithCreationDateResponseBody =
+  ResponseBody<UserWithCreationDate>;
+export type UserResponseBody =
+  | UserWithContributionsResponseBody
+  | UserWithCreationDateResponseBody;
