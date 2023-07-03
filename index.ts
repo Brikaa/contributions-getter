@@ -131,7 +131,7 @@ export const getContributions = async (
               description: c.repository.description,
               name: c.repository.nameWithOwner,
               primaryLanguage:
-                c.repository.primaryLanguage === null ? null : c.repository.primaryLanguage?.name,
+                c.repository.primaryLanguage === null ? null : c.repository.primaryLanguage.name,
               stars: c.repository.stargazerCount,
               url: c.repository.url,
               commitsUrl: c.url,
