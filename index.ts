@@ -1,5 +1,9 @@
 import { Contribution } from './types/contributionTypes';
-import { GraphQLException, NotSuccessStatusException } from './exceptions/exceptions';
+import {
+  GraphQLException,
+  InvalidConfigException,
+  NotSuccessStatusException
+} from './exceptions/exceptions';
 import {
   UserResponseBody,
   UserWithContributionsResponseBody,
@@ -79,6 +83,13 @@ const handleResponseError = (response: UserResponseBody) => {
   throw new GraphQLException(`${message}\nGraphQL response error: ${graphQLError}`);
 };
 
+const validateConfig = (config: Config) => {
+  if (config.monthsInterval % 1 != 0)
+    throw new InvalidConfigException('monthsInterval must be a whole number');
+  else if (config.monthsInterval > 12 || config.monthsInterval < 1)
+    throw new InvalidConfigException('monthsInterval out of range (1-12)');
+};
+
 /**
  * Get the contributions for each interval, determined by `config.monthsInterval` (default 12),
  * from the current date (or slightly past it) till the account creation date (or slightly before it)
@@ -88,6 +99,8 @@ export const getContributions = async (
   userName: string,
   config: Config = { monthsInterval: 12 }
 ): Promise<Contribution[]> => {
+  validateConfig(config);
+
   const userWithDateRes: UserWithCreationDateResponseBody = await sendRequest(
     token,
     handleResponseError,
