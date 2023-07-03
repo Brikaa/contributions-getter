@@ -6,6 +6,8 @@ import {
 } from '../exceptions/exceptions';
 import { readFileSync } from 'fs';
 import { jsonStringify } from '../main/util';
+import { FetchType } from '../types/configTypes';
+import { expect, jest } from '@jest/globals';
 
 let authToken: string;
 
@@ -39,6 +41,29 @@ describe('getContributions', () => {
   it('throws GraphQLException when the username is incorrect', async () => {
     // A GitHub username can never be 'new'
     await expect(() => getContributions(authToken, 'new')).rejects.toThrow(GraphQLException);
+  });
+
+  const createMockFetch = (jsonResponse: any, status: number, statusText: string): FetchType =>
+    jest
+      .fn<FetchType>()
+      .mockResolvedValue({
+        json: async () => jsonResponse,
+        status: status,
+        statusText: statusText
+      });
+
+  it('throws GraphQLException when there is no data', async () => {
+    const fetchNoData = createMockFetch({}, 200, 'OK');
+    await expect(() =>
+      getContributions(authToken, 'brikaa', { fetchFn: fetchNoData })
+    ).rejects.toThrow(GraphQLException);
+  });
+
+  it('throws GraphQLException when data field is null', async () => {
+    const fetchNullData = createMockFetch({ data: null }, 200, 'OK');
+    await expect(() =>
+      getContributions(authToken, 'brikaa', { fetchFn: fetchNullData })
+    ).rejects.toThrow(GraphQLException);
   });
 
   it('does not accept a monthsInterval that is more than 12', async () => {

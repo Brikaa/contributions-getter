@@ -10,7 +10,7 @@ import {
   UserWithCreationDateResponseBody
 } from '../types/responseTypes';
 import { jsonStringify } from './util';
-import { Config } from '../types/configTypes';
+import { Config, FetchType } from '../types/configTypes';
 
 const USER_WITH_CREATION_DATE_QUERY = `query getUser($login: String!) {
   user(login: $login) {
@@ -43,6 +43,7 @@ const USER_WITH_CONTRIBUTIONS_QUERY = `query getUser($login: String!, $from: Dat
 
 const sendRequest = async (
   token: string,
+  fetchFn: FetchType,
   handleErrors: (response: any) => void,
   query: string,
   variables: { [key: string]: any }
@@ -60,7 +61,7 @@ const sendRequest = async (
     body
   };
 
-  const res = await fetch('https://api.github.com/graphql', options);
+  const res = await fetchFn('https://api.github.com/graphql', options);
   if (res.status >= 400) {
     throw new NotSuccessStatusException(
       `Request to GitHub API failed (${res.status} ${res.statusText})`
@@ -84,10 +85,12 @@ const handleResponseError = (response: UserResponseBody) => {
 };
 
 const validateConfig = (config: Config) => {
-  if (config.monthsInterval % 1 != 0)
-    throw new InvalidConfigException('monthsInterval must be a whole number');
-  else if (config.monthsInterval > 12 || config.monthsInterval < 1)
-    throw new InvalidConfigException('monthsInterval out of range (1-12)');
+  if (config.monthsInterval !== undefined) {
+    if (config.monthsInterval % 1 != 0)
+      throw new InvalidConfigException('monthsInterval must be a whole number');
+    else if (config.monthsInterval > 12 || config.monthsInterval < 1)
+      throw new InvalidConfigException('monthsInterval out of range (1-12)');
+  }
 };
 
 /**
@@ -97,12 +100,14 @@ const validateConfig = (config: Config) => {
 export const getContributions = async (
   token: string,
   userName: string,
-  config: Config = { monthsInterval: 12 }
+  config: Config = {}
 ): Promise<Contribution[]> => {
   validateConfig(config);
 
+  const { monthsInterval = 12, fetchFn = fetch } = config;
   const userWithDateRes: UserWithCreationDateResponseBody = await sendRequest(
     token,
+    fetchFn,
     handleResponseError,
     USER_WITH_CREATION_DATE_QUERY,
     { login: userName }
@@ -113,11 +118,11 @@ export const getContributions = async (
   let endDate = new Date();
   let startDate = new Date(endDate);
   while (endDate >= creationDate) {
-    startDate.setMonth(startDate.getMonth() - config.monthsInterval);
+    startDate.setMonth(startDate.getMonth() - monthsInterval);
     const startDateCopy = new Date(startDate);
     const endDateCopy = new Date(endDate);
     promises.push(
-      sendRequest(token, handleResponseError, USER_WITH_CONTRIBUTIONS_QUERY, {
+      sendRequest(token, fetchFn, handleResponseError, USER_WITH_CONTRIBUTIONS_QUERY, {
         login: userName,
         from: startDate,
         to: endDate
