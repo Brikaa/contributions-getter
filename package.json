@@ -5,7 +5,7 @@
     "email": "brikaaomar@gmail.com",
     "url": "https://github.com/brikaa"
   },
-  "description": "Gets all of the repositories a user has contributed to since their account creation",
+  "description": "Gets all of the GitHub repositories a user has contributed to since their account creation",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
