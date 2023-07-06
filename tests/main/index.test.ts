@@ -1,12 +1,12 @@
-import { getContributions } from "../main";
+import { getContributions } from "../../main";
 import {
   GraphQLException,
   InvalidConfigException,
   NotSuccessStatusException,
-} from "../exceptions/exceptions";
+} from "../../exceptions/exceptions";
 import { readFileSync } from "fs";
-import { jsonStringify } from "../main/util";
-import { FetchType } from "../types/configTypes";
+import { jsonStringify } from "../../main/util";
+import { FetchType } from "../../types/configTypes";
 import { expect, jest } from "@jest/globals";
 
 let authToken: string;
