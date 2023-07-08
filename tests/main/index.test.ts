@@ -26,13 +26,13 @@ describe("getContributions", () => {
     const contributions = await getContributions(authToken, "brikaa");
 
     contributions.forEach((contribution) => {
-      const contributionClone: any = { ...contribution };
-      for (const key in contributionClone)
-        expect(contributionClone[key]).toBeDefined();
+      const contributionCopy: any = contribution;
+      for (const key in contributionCopy)
+        expect(contributionCopy[key]).toBeDefined();
 
       contribution.repos.forEach((r) => {
-        const repoClone: any = { ...r };
-        for (const key in repoClone) expect(repoClone[key]).toBeDefined();
+        const repoCopy: any = r;
+        for (const key in repoCopy) expect(repoCopy[key]).toBeDefined();
       });
     });
 
@@ -53,8 +53,8 @@ describe("getContributions", () => {
   ): FetchType =>
     jest.fn<FetchType>().mockResolvedValue({
       json: async () => jsonResponse,
-      status: status,
-      statusText: statusText,
+      status,
+      statusText,
     });
 
   it("throws GraphQLException when there is no data", async () => {
