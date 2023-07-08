@@ -1,4 +1,4 @@
-interface Repository {
+export interface Repository {
   name: string;
   url: string;
   commitsUrl: string;
