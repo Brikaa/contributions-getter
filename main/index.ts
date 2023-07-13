@@ -1,4 +1,4 @@
-import { Contribution } from "../types/contributionTypes";
+import { ContributionsInterval } from "../types/contributionTypes";
 import {
   GraphQLException,
   InvalidConfigException,
@@ -103,7 +103,7 @@ export const getContributions = async (
   token: string,
   userName: string,
   config: Config = {}
-): Promise<Contribution[]> => {
+): Promise<ContributionsInterval[]> => {
   validateConfig(config);
 
   const { monthsInterval = 12, fetchFn = fetch } = config;

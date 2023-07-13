@@ -1,6 +1,6 @@
 # contributions-getter
 
-A JavaScript/TypeScript library that gets all of the GitHub repositories a user has contributed to since their account
+A JavaScript/TypeScript library that gets all of the GitHub repositories a user has committed in since their account's
 creation
 
 # Example usage

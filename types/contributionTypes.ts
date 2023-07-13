@@ -9,7 +9,7 @@ export interface Repository {
   isPrivate: boolean;
 }
 
-export interface Contribution {
+export interface ContributionsInterval {
   startDate: Date;
   endDate: Date;
   repos: Repository[];
